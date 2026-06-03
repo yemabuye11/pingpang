@@ -1,44 +1,44 @@
-
- 
-<头>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title> 呈教附乒乓球高级计分器Pro</title>
-    
+    <title>呈教附乒乓球高级计分器Pro</title>
+    <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+    <!-- 引入 html2canvas 用于生成图片 -->
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <样式>
+    <style>
         /* 禁用移动端双击缩放，提升点击响应速度 */
-        按钮，。不放大 ｛
-            触摸动作：操作;
+        button, .no-zoom {
+            touch-action: manipulation;
         }
         /* 美化滚动条 */
         ::-webkit-scrollbar {
-            宽度：6像素;
+            width: 6px;
         }
         ::-webkit-scrollbar-track {
-            背景: #1e293b;
+            background: #1e293b;
         }
         ::-webkit-scrollbar-thumb {
-            背景: #475569;
-            边框半径：3像素;
+            background: #475569;
+            border-radius: 3px;
         }
-    </样式>
-</头>
+    </style>
+</head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen pb-10">
 
-     
+    <div class="max-w-md mx-auto bg-slate-900 min-h-screen shadow-2xl flex flex-col justify-between border-x border-slate-800">
         
-        
-        <标题 类="从蓝色-700到青色-800的背景渐变 p-4 固定顶部-0 z-20 阴影大 圆角底部-2xl">
-            <h1 class="文本居中 大文本 黑体 加宽字符 3号边距 项目对齐 项目间隙 2号">
+        <!-- 头部区域 -->
+        <header class="bg-gradient-to-r from-blue-700 to-indigo-800 p-4 sticky top-0 z-20 shadow-lg rounded-b-2xl">
+            <h1 class="text-center text-lg font-black tracking-wider mb-3 flex items-center justify-center gap-2">
                 🏓 呈教附乒乓球计分器 <span class="text-[10px] bg-yellow-400 text-slate-950 px-2 py-0.5 rounded-full font-black">三局两胜</span>
             </h1>
             
-            
+            <!-- 选手姓名输入 -->
             <div class="flex gap-3 mb-4">
-                <div 类="w-1/2">
+                <div class="w-1/2">
                     <label class="text-[10px] text-blue-200 block mb-1">选手 A (1号原位)</label>
                     <input id="player1Input" type="text" value="选手 A" class="w-full bg-slate-950/60 text-white rounded-lg px-3 py-1.5 text-center text-sm border border-blue-400/20 focus:outline-none focus:border-yellow-400 font-bold transition-all">
                 </div>
@@ -60,7 +60,7 @@
                     </button>
                 </div>
                 <!-- 重置按钮 -->
-                <按钮 点击="重置当前匹配()" 类="背景红色500 悬停时背景红色600 活动时缩放95 白色文本 左内边距3 右内边距1.5 圆角大 小字体 加粗 转换所有 居中 对齐 gap-1 阴影大">
+                <button onclick="resetCurrentMatch()" class="bg-red-500 hover:bg-red-600 active:scale-95 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 shadow-md">
                     🔄 重置
                 </button>
             </div>
@@ -81,7 +81,7 @@
 
             <!-- 核心比分展示板 -->
             <div class="bg-gradient-to-b from-slate-850 to-slate-900 p-4 rounded-2xl border border-slate-800 shadow-inner my-2 relative">
-                <!-- 大比分星级灯显示 (2颗星代表赢2局) -->
+                <!-- 大比分星级灯显示 -->
                 <div class="flex justify-between px-6 mb-2">
                     <!-- 左侧胜局星 -->
                     <div id="leftStars" class="flex gap-1 text-lg">
@@ -304,6 +304,7 @@
             }
         }
 
+        // 直接在代码里添加直接设置大局比分安全限制，防止越界
         function setScoreDirect(side, value) {
             if (match.matchFinished) return;
             if (!match.matchStartTime) {
@@ -363,9 +364,8 @@
                     match.p2GamesWon++;
                 }
 
-                updateUI(); // 立即更新亮起的星星
+                updateUI(); 
 
-                // 核心控制：判断三局两胜 (2局直接赢)
                 if (match.p1GamesWon === 2 || match.p2GamesWon === 2) {
                     match.matchFinished = true;
                     saveMatchToHistory();
@@ -395,7 +395,6 @@
                 label.className = "text-xs font-bold text-yellow-400 bg-slate-800 py-1 px-4 rounded-full inline-block border border-slate-700";
             }
 
-            // 更新左、右侧状态
             document.getElementById('leftPlayerName').innerText = sides.leftPlayer;
             document.getElementById('leftScore').innerText = match.currentGameScores.left;
             document.getElementById('leftSideLabel').innerText = `左侧 [${sides.leftPos}]`;
@@ -404,7 +403,6 @@
             document.getElementById('rightScore').innerText = match.currentGameScores.right;
             document.getElementById('rightSideLabel').innerText = `右侧 [${sides.rightPos}]`;
 
-            // 更新顶部的星级灯 (2灯制)
             const leftWonCount = sides.leftKey === 'p1' ? match.p1GamesWon : match.p2GamesWon;
             const rightWonCount = sides.rightKey === 'p1' ? match.p1GamesWon : match.p2GamesWon;
 
@@ -420,7 +418,6 @@
             }
             document.getElementById('rightStars').innerHTML = rightStarsHtml;
 
-            // 动态修改0-15控制区上方的文字
             document.getElementById('leftGridTitle').innerText = `给 ${sides.leftPlayer} 直接改分`;
             document.getElementById('rightGridTitle').innerText = `给 ${sides.rightPlayer} 直接改分`;
         }
@@ -523,7 +520,6 @@
             });
         }
 
-        // 删除记录
         function deleteRecord(id) {
             if (confirm("确定要永久删除这条比赛记录吗？")) {
                 matchHistory = matchHistory.filter(item => item.id !== id);
@@ -532,7 +528,6 @@
             }
         }
 
-        // 清空所有历史
         function clearAllHistory() {
             if (confirm("警告！清空记录后，本地所有历史对局将不可恢复。确定要清空吗？")) {
                 matchHistory = [];
@@ -541,26 +536,23 @@
             }
         }
 
-        // 手机端：生成渲染图，唤起遮罩模态框供“长按保存”
         function generateImage(cardId) {
             const card = document.getElementById(`card-${cardId}`);
             
-            // 临时隐藏卡片操作栏以保持图片整洁
             const controlBar = card.querySelector('div:last-child');
             controlBar.style.display = 'none';
 
             const options = {
-                backgroundColor: '#0f172a', // 深蓝黑色背景（Slate-900）
-                scale: 3, // 高清导出倍率
+                backgroundColor: '#0f172a', 
+                scale: 3, 
                 useCORS: true,
                 logging: false
             };
 
             html2canvas(card, options).then(canvas => {
-                controlBar.style.display = 'flex'; // 恢复卡片操作栏
+                controlBar.style.display = 'flex'; 
                 const imgData = canvas.toDataURL('image/png');
                 
-                // 绑定到模态框的 img 标签上并展示模态框
                 document.getElementById('modalImage').src = imgData;
                 document.getElementById('imageModal').classList.remove('hidden');
             }).catch(err => {
@@ -574,7 +566,6 @@
             document.getElementById('imageModal').classList.add('hidden');
         }
 
-        // 微信推送 PushPlus 通道接口
         function sendToPushPlus(recordId) {
             const token = localStorage.getItem('pushplus_token');
             if (!token || token.trim() === '') {
@@ -615,7 +606,6 @@
                 </div>
             `;
 
-            // 发送网络请求
             fetch('https://www.pushplus.plus/send', {
                 method: 'POST',
                 headers: {
