@@ -1,54 +1,47 @@
-
- 
-<头>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>乒乓球专业计分器</title>
-    
+    <!-- 引入 Tailwind CSS 用于移动端精美布局 -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+    <!-- 引入 html2canvas 用于将记录导出为图片 -->
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-</头>
+</head>
 <body class="bg-gray-100 font-sans select-none pb-12">
 
-     
+    <div class="max-w-md mx-auto bg-white min-h-screen shadow-lg flex flex-col justify-between">
         
-        
-        <标题 类="背景蓝色600文本白色内边距4粘性顶部0 z轴10阴影大">
-            <h1 class="text-center text-xl font-bold mb-2">🏓 呈教附乒乓球计分器 (三局两胜)</h1>
+        <!-- 顶部控制与设置 -->
+        <header class="bg-blue-600 text-white p-4 sticky top-0 z-10 shadow-md">
+            <h1 class="text-center text-xl font-bold mb-2">🏓 乒乓球计分器 (三局两胜)</h1>
             
             <div class="flex gap-2 mb-3">
-                <输入 id="player1Input" 类型="文本" 值="选手 A" 占位符="选手 A" 类="w-1/2 p-1 文本黑色 圆角 文本居中 文本小">
-                <输入 id="player2Input" 类型="文本" 值="选手 B" 占位符="选手 B" 类="w-1/2 p-1 文本黑色 圆角 文本居中 文本小">
+                <input id="player1Input" type="text" value="选手 A" placeholder="选手 A" class="w-1/2 p-1 text-black rounded text-center text-sm">
+                <input id="player2Input" type="text" value="选手 B" placeholder="选手 B" class="w-1/2 p-1 text-black rounded text-center text-sm">
             </div>
 
             <div class="flex justify-between items-center text-sm">
-                
-                <div class="flex items-center gap-1">
-                    <span class="text-xs">模式:</span>
-                    <选择 id="模式选择" 类="背景蓝色-700文本白色圆角p-1文本微小" onchange="切换模式()">
-                        <选项 值="直接">0-15 数字面板</选项>
-                        <选项 值="正负">加减分 (+/-)</选项>
-                    </选择>
-                </div>
-                <按钮 点击="重置当前匹配()" 类="背景红色-500 鼠标悬停时背景红色-600 内边距3 外边距1 圆角 文本大小小字体 加粗">
+                <span class="text-xs text-blue-100">点击下方按钮进行加减分</span>
+                <button onclick="resetCurrentMatch()" class="bg-red-500 hover:bg-red-600 px-3 py-1 rounded text-xs font-semibold">
                     重置本场
-                </按钮>
-            </div></div>
-        </header></header>
+                </button>
+            </div>
+        </header>
 
         <!-- 主计分区域 -->
-        <main class="p-4 flex-grow flex flex-col justify-between"><main class="p-4 flex-grow flex flex-col justify-between">
+        <main class="p-4 flex-grow flex flex-col justify-between">
             
             <!-- 当前局数与状态提示 -->
             <div class="text-center my-2">
                 <div id="gameNumberLabel" class="text-lg font-bold text-blue-600 bg-blue-50 py-1 rounded">
                     第 1 局 (进行中)
-                </div></div>
+                </div>
                 <div class="text-xs text-gray-500 mt-1">
                     规则: 11分制(赢2分) 或 先到15分者胜。每局打完交换场地。
-                </div></div>
-            </div></div>
+                </div>
+            </div>
 
             <!-- 大比分显示区 -->
             <div class="flex justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-inner my-3">
@@ -74,37 +67,25 @@
                 </div>
             </div>
 
-            <!-- 1. 0-15数字面板模式 (默认) -->
-            <div id="directModeArea" class="grid grid-cols-2 gap-4 my-2">
-                <!-- 左边 0-15 按钮 -->
-                <div>
-                    <div class="text-center text-xs text-gray-400 mb-1">点击左侧直接设分</div>
-                    <div class="grid grid-cols-4 gap-1 bg-blue-50 p-2 rounded-lg">
-                        <!-- JS动态生成0-15按钮 -->
-                        <div id="leftButtons" class="contents"></div>
-                    </div>
-                </div>
-                <!-- 右边 0-15 按钮 -->
-                <div>
-                    <div class="text-center text-xs text-gray-400 mb-1">点击右侧直接设分</div>
-                    <div class="grid grid-cols-4 gap-1 bg-blue-50 p-2 rounded-lg">
-                        <!-- JS动态生成0-15按钮 -->
-                        <div id="rightButtons" class="contents"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 2. 加减分模式 (默认隐藏) -->
-            <div id="plusminusModeArea" class="hidden grid grid-cols-2 gap-6 my-6">
+            <!-- 加减分按键区域 (唯一保留的计分方式) -->
+            <div class="grid grid-cols-2 gap-6 my-6">
                 <!-- 左侧加减 -->
-                <div class="flex flex-col gap-2">
-                    <button onclick="changeScore('left', 1)" class="bg-blue-500 text-white text-3xl font-bold py-6 rounded-xl active:bg-blue-600 shadow">+</button>
-                    <button onclick="changeScore('left', -1)" class="bg-gray-300 text-gray-700 text-xl font-bold py-2 rounded-xl active:bg-gray-400 shadow">-</button>
+                <div class="flex flex-col gap-3">
+                    <button onclick="changeScore('left', 1)" class="bg-blue-500 text-white text-4xl font-bold py-8 rounded-2xl active:bg-blue-600 shadow-md touch-manipulation">
+                        +1
+                    </button>
+                    <button onclick="changeScore('left', -1)" class="bg-gray-300 text-gray-700 text-xl font-bold py-3 rounded-xl active:bg-gray-400 shadow touch-manipulation">
+                        -1
+                    </button>
                 </div>
                 <!-- 右侧加减 -->
-                <div class="flex flex-col gap-2">
-                    <button onclick="changeScore('right', 1)" class="bg-blue-500 text-white text-3xl font-bold py-6 rounded-xl active:bg-blue-600 shadow">+</button>
-                    <button onclick="changeScore('right', -1)" class="bg-gray-300 text-gray-700 text-xl font-bold py-2 rounded-xl active:bg-gray-400 shadow">-</button>
+                <div class="flex flex-col gap-3">
+                    <button onclick="changeScore('right', 1)" class="bg-blue-500 text-white text-4xl font-bold py-8 rounded-2xl active:bg-blue-600 shadow-md touch-manipulation">
+                        +1
+                    </button>
+                    <button onclick="changeScore('right', -1)" class="bg-gray-300 text-gray-700 text-xl font-bold py-3 rounded-xl active:bg-gray-400 shadow touch-manipulation">
+                        -1
+                    </button>
                 </div>
             </div>
 
@@ -145,7 +126,6 @@
 
         // 初始化加载
         window.onload = function() {
-            renderDirectButtons();
             syncNames();
             updateUI();
             renderHistory();
@@ -189,40 +169,7 @@
             }
         }
 
-        // 切换记分模式
-        function toggleMode() {
-            const mode = document.getElementById('modeSelect').value;
-            if (mode === 'direct') {
-                document.getElementById('directModeArea').classList.remove('hidden');
-                document.getElementById('plusminusModeArea').classList.add('hidden');
-            } else {
-                document.getElementById('directModeArea').classList.add('hidden');
-                document.getElementById('plusminusModeArea').classList.remove('hidden');
-            }
-        }
-
-        // 生成0-15数字面板按钮
-        function renderDirectButtons() {
-            const leftContainer = document.getElementById('leftButtons');
-            const rightContainer = document.getElementById('rightButtons');
-            leftContainer.innerHTML = '';
-            rightContainer.innerHTML = '';
-
-            for (let i = 0; i <= 15; i++) {
-                leftContainer.innerHTML += `<button onclick="setScoreDirect('left', ${i})" class="bg-white border border-gray-300 rounded text-sm py-1.5 active:bg-blue-500 active:text-white transition-colors duration-100">${i}</button>`;
-                rightContainer.innerHTML += `<button onclick="setScoreDirect('right', ${i})" class="bg-white border border-gray-300 rounded text-sm py-1.5 active:bg-blue-500 active:text-white transition-colors duration-100">${i}</button>`;
-            }
-        }
-
-        // 模式1：直接点击设置分数
-        function setScoreDirect(side, value) {
-            if (match.matchFinished) return;
-            match.currentGameScores[side] = value;
-            updateUI();
-            checkGameWinCondition();
-        }
-
-        // 模式2：加减分数
+        // 改变分数 (加分或减分)
         function changeScore(side, amount) {
             if (match.matchFinished) return;
             let current = match.currentGameScores[side];
