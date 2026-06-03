@@ -1,54 +1,54 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
+
+ 
+<头>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>乒乓球专业计分器</title>
-    <!-- 引入 Tailwind CSS 用于移动端精美布局 -->
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入 html2canvas 用于将记录导出为图片 -->
+    
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-</head>
+</头>
 <body class="bg-gray-100 font-sans select-none pb-12">
 
-    <div class="max-w-md mx-auto bg-white min-h-screen shadow-lg flex flex-col justify-between">
+     
         
-        <!-- 顶部控制与设置 -->
-        <header class="bg-blue-600 text-white p-4 sticky top-0 z-10 shadow-md">
-            <h1 class="text-center text-xl font-bold mb-2">🏓 乒乓球计分器 (三局两胜)</h1>
+        
+        <标题 类="背景蓝色600文本白色内边距4粘性顶部0 z轴10阴影大">
+            <h1 class="text-center text-xl font-bold mb-2">🏓 呈教附乒乓球计分器 (三局两胜)</h1>
             
             <div class="flex gap-2 mb-3">
-                <input id="player1Input" type="text" value="选手 A" placeholder="选手 A" class="w-1/2 p-1 text-black rounded text-center text-sm">
-                <input id="player2Input" type="text" value="选手 B" placeholder="选手 B" class="w-1/2 p-1 text-black rounded text-center text-sm">
+                <输入 id="player1Input" 类型="文本" 值="选手 A" 占位符="选手 A" 类="w-1/2 p-1 文本黑色 圆角 文本居中 文本小">
+                <输入 id="player2Input" 类型="文本" 值="选手 B" 占位符="选手 B" 类="w-1/2 p-1 文本黑色 圆角 文本居中 文本小">
             </div>
 
             <div class="flex justify-between items-center text-sm">
-                <!-- 记分模式切换 -->
+                
                 <div class="flex items-center gap-1">
                     <span class="text-xs">模式:</span>
-                    <select id="modeSelect" class="bg-blue-700 text-white rounded p-1 text-xs" onchange="toggleMode()">
-                        <option value="direct">0-15 数字面板</option>
-                        <option value="plusminus">加减分 (+/-)</option>
-                    </select>
+                    <选择 id="模式选择" 类="背景蓝色-700文本白色圆角p-1文本微小" onchange="切换模式()">
+                        <选项 值="直接">0-15 数字面板</选项>
+                        <选项 值="正负">加减分 (+/-)</选项>
+                    </选择>
                 </div>
-                <button onclick="resetCurrentMatch()" class="bg-red-500 hover:bg-red-600 px-3 py-1 rounded text-xs font-semibold">
+                <按钮 点击="重置当前匹配()" 类="背景红色-500 鼠标悬停时背景红色-600 内边距3 外边距1 圆角 文本大小小字体 加粗">
                     重置本场
-                </button>
-            </div>
-        </header>
+                </按钮>
+            </div></div>
+        </header></header>
 
         <!-- 主计分区域 -->
-        <main class="p-4 flex-grow flex flex-col justify-between">
+        <main class="p-4 flex-grow flex flex-col justify-between"><main class="p-4 flex-grow flex flex-col justify-between">
             
             <!-- 当前局数与状态提示 -->
             <div class="text-center my-2">
                 <div id="gameNumberLabel" class="text-lg font-bold text-blue-600 bg-blue-50 py-1 rounded">
                     第 1 局 (进行中)
-                </div>
+                </div></div>
                 <div class="text-xs text-gray-500 mt-1">
                     规则: 11分制(赢2分) 或 先到15分者胜。每局打完交换场地。
-                </div>
-            </div>
+                </div></div>
+            </div></div>
 
             <!-- 大比分显示区 -->
             <div class="flex justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-inner my-3">
