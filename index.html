@@ -1,175 +1,317 @@
-
- 
-<头>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>乒乓球专业计分器</title>
-    
+    <title>乒乓球高级计分器</title>
+    <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+    <!-- 引入 html2canvas 用于生成图片 -->
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-</头>
-<body class="bg-gray-100 font-sans select-none pb-12">
+    <style>
+        /* 禁用移动端双击缩放，提升点击响应速度 */
+        button, .no-zoom {
+            touch-action: manipulation;
+        }
+        /* 美化滚动条 */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen pb-10">
 
-     
+    <div class="max-w-md mx-auto bg-slate-800 min-h-screen shadow-2xl flex flex-col justify-between border-x border-slate-700">
         
-        
-        <标题 类="背景蓝色600文本白色内边距4粘性顶部0 z轴10阴影大">
-            <h1 class="text-center text-xl font-bold mb-2">🏓 呈教附乒乓球计分器 (三局两胜)</h1>
+        <!-- 头部区域 -->
+        <header class="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 sticky top-0 z-20 shadow-lg rounded-b-2xl">
+            <h1 class="text-center text-xl font-extrabold tracking-wider mb-3 flex items-center justify-center gap-2">
+                🏓 乒乓球计分器 <span class="text-xs bg-yellow-400 text-slate-900 px-2 py-0.5 rounded-full font-bold">三局两胜</span>
+            </h1>
             
-            <div class="flex gap-2 mb-3">
-                <输入 id="player1Input" 类型="文本" 值="选手 A" 占位符="选手 A" 类="w-1/2 p-1 文本黑色 圆角 文本居中 文本小">
-                <输入 id="player2Input" 类型="文本" 值="选手 B" 占位符="选手 B" 类="w-1/2 p-1 文本黑色 圆角 文本居中 文本小">
+            <!-- 选手姓名输入 -->
+            <div class="flex gap-3 mb-4">
+                <div class="w-1/2">
+                    <label class="text-[10px] text-blue-200 block mb-1">选手 A (1号位)</label>
+                    <input id="player1Input" type="text" value="选手 A" class="w-full bg-slate-900/60 text-white rounded-lg px-3 py-1.5 text-center text-sm border border-blue-400/30 focus:outline-none focus:border-yellow-400 font-bold transition-all">
+                </div>
+                <div class="w-1/2">
+                    <label class="text-[10px] text-blue-200 block mb-1">选手 B (2号位)</label>
+                    <input id="player2Input" type="text" value="选手 B" class="w-full bg-slate-900/60 text-white rounded-lg px-3 py-1.5 text-center text-sm border border-blue-400/30 focus:outline-none focus:border-yellow-400 font-bold transition-all">
+                </div>
             </div>
 
-            <div class="flex justify-between items-center text-sm">
-                <span class="text-xs text-blue-100">点击下方按钮进行加减分</span>
-                <按钮 点击="重置当前匹配()" 类="背景红色-500 鼠标悬停时背景红色-600 内边距3 外边距1 圆角 文本大小小字体 加粗">
-                    重置本场
-                </按钮>
+            <!-- 控制栏 -->
+            <div class="flex justify-between items-center bg-slate-900/40 p-2 rounded-xl">
+                <!-- 计分模式切换器 -->
+                <div class="flex bg-slate-950 p-1 rounded-lg border border-slate-700 w-2/3">
+                    <button id="tabDirect" onclick="switchMode('direct')" class="w-1/2 py-1 text-xs font-bold rounded-md transition-all bg-blue-500 text-white shadow-md">
+                        0-15数字键
+                    </button>
+                    <button id="tabPlusMinus" onclick="switchMode('plusminus')" class="w-1/2 py-1 text-xs font-bold rounded-md transition-all text-slate-400">
+                        加减分(+/-)
+                    </button>
+                </div>
+                <!-- 重置按钮 -->
+                <button onclick="resetCurrentMatch()" class="bg-red-500 hover:bg-red-600 active:scale-95 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 shadow-md">
+                    🔄 重置
+                </button>
             </div>
-        </标题>
+        </header>
 
-        
-        <主要 类="p-4 flex-grow flex flex-col justify-between">
+        <!-- 主内容区 -->
+        <main class="p-4 flex-grow flex flex-col justify-between">
             
-            
+            <!-- 当前对局状态 -->
             <div class="text-center my-2">
-                <div id="gameNumberLabel" class="text-lg font-bold text-blue-600 bg-blue-50 py-1 rounded">
+                <div id="gameNumberLabel" class="text-sm font-bold text-yellow-400 bg-slate-700/50 py-1.5 px-4 rounded-full inline-block border border-slate-600">
                     第 1 局 (进行中)
-                </div></div>
-                <div class="text-xs text-gray-500 mt-1">
-                    规则: 11分制(赢2分) 或 先到15分者胜。每局打完交换场地。
-                </div></div>
-            </div></div>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-2">
+                    规则: 先到11分且超2分获胜，封顶15分。每局完交换场地。
+                </p>
+            </div>
 
-            <!-- 大比分显示区 -->
-            <div class="flex justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-inner my-3">
-                <!-- 左侧 -->
-                <div class="text-center w-5/12">
-                    左侧方位<div id="leftSideLabel" class="text-xs text-gray-500 font-semibold mb-1">左侧方位</div>
-                    选手 A<div id="leftPlayerName" class="text-base font-bold text-gray-800 truncate">选手 A</div>
-                    0<div id="leftScore" class="text-6xl font-extrabold text-blue-600 my-2">0</div>
-                    胜局: 0<div id="leftGamesWon" class="text-sm text-gray-500">胜局: 0</div>
-                </div></div>
+            <!-- 比分板显示 -->
+            <div class="bg-gradient-to-b from-slate-800 to-slate-900 p-5 rounded-2xl border border-slate-700/80 shadow-inner my-3 relative overflow-hidden">
+                <div class="absolute inset-0 bg-blue-500/5 pointer-events-none"></div>
+                
+                <div class="flex justify-between items-center relative z-10">
+                    <!-- 左侧席位 -->
+                    <div class="text-center w-5/12">
+                        <div id="leftSideLabel" class="text-[10px] text-emerald-400 font-bold tracking-wider uppercase mb-1 bg-emerald-500/10 py-0.5 px-1.5 rounded-full inline-block">
+                            左侧
+                        </div>
+                        <div id="leftPlayerName" class="text-base font-extrabold text-white truncate my-1">选手 A</div>
+                        <!-- 大比分 -->
+                        <div id="leftScore" class="text-7xl font-black text-blue-400 my-2 tracking-tighter drop-shadow-[0_0_15px_rgba(96,165,250,0.3)]">0</div>
+                        <div id="leftGamesWon" class="text-xs text-slate-400 font-medium bg-slate-800 py-1 px-2.5 rounded-full border border-slate-700 inline-block">
+                            胜局: 0
+                        </div>
+                    </div>
 
-                <!-- VS / 分割线 -->
-                <div class="text-center w-2/12">
-                    VS<span class="text-xl font-bold text-gray-400">VS</span>
-                </div></div>
+                    <!-- VS 分隔 -->
+                    <div class="text-center w-2/12 flex flex-col items-center justify-center">
+                        <div class="h-10 w-[2px] bg-gradient-to-b from-transparent via-slate-600 to-transparent"></div>
+                        <span class="text-lg font-black text-slate-500 my-2">VS</span>
+                        <div class="h-10 w-[2px] bg-gradient-to-b from-transparent via-slate-600 to-transparent"></div>
+                    </div>
 
-                <!-- 右侧 -->
-                <div class="text-center w-5/12">
-                    右侧方位<div id="rightSideLabel" class="text-xs text-gray-500 font-semibold mb-1">右侧方位</div>
-                    <div id="rightPlayerName" class="text-base font-bold text-gray-800 truncate">选手 B</div>
-                    <div id="rightScore" class="text-6xl font-extrabold text-blue-600 my-2">0</div>
-                    <div id="rightGamesWon" class="text-sm text-gray-500">胜局: 0</div>
+                    <!-- 右侧席位 -->
+                    <div class="text-center w-5/12">
+                        <div id="rightSideLabel" class="text-[10px] text-amber-400 font-bold tracking-wider uppercase mb-1 bg-amber-500/10 py-0.5 px-1.5 rounded-full inline-block">
+                            右侧
+                        </div>
+                        <div id="rightPlayerName" class="text-base font-extrabold text-white truncate my-1">选手 B</div>
+                        <!-- 大比分 -->
+                        <div id="rightScore" class="text-7xl font-black text-blue-400 my-2 tracking-tighter drop-shadow-[0_0_15px_rgba(96,165,250,0.3)]">0</div>
+                        <div id="rightGamesWon" class="text-xs text-slate-400 font-medium bg-slate-800 py-1 px-2.5 rounded-full border border-slate-700 inline-block">
+                            胜局: 0
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- 加减分按键区域 (唯一保留的计分方式) -->
-            <div class="grid grid-cols-2 gap-6 my-6">
-                <!-- 左侧加减 -->
-                <div class="flex flex-col gap-3">
-                    <button onclick="changeScore('left', 1)" class="bg-blue-500 text-white text-4xl font-bold py-8 rounded-2xl active:bg-blue-600 shadow-md touch-manipulation">
-                        +1
-                    </button>
-                    <button onclick="changeScore('left', -1)" class="bg-gray-300 text-gray-700 text-xl font-bold py-3 rounded-xl active:bg-gray-400 shadow touch-manipulation">
-                        -1
-                    </button>
+            <!-- 控制区域容器 -->
+            <div class="my-2">
+                <!-- 1. 0-15直接设分面板 -->
+                <div id="directModeArea" class="grid grid-cols-2 gap-4">
+                    <!-- 左侧面板 -->
+                    <div class="bg-slate-850 p-2 rounded-xl border border-slate-700/50">
+                        <div class="text-center text-[11px] text-slate-400 font-medium mb-2">点数字直改左侧比分</div>
+                        <div id="leftButtons" class="grid grid-cols-4 gap-1.5">
+                            <!-- 由 JS 生成 0-15 按钮 -->
+                        </div>
+                    </div>
+                    <!-- 右侧面板 -->
+                    <div class="bg-slate-850 p-2 rounded-xl border border-slate-700/50">
+                        <div class="text-center text-[11px] text-slate-400 font-medium mb-2">点数字直改右侧比分</div>
+                        <div id="rightButtons" class="grid grid-cols-4 gap-1.5">
+                            <!-- 由 JS 生成 0-15 按钮 -->
+                        </div>
+                    </div>
                 </div>
-                <!-- 右侧加减 -->
-                <div class="flex flex-col gap-3">
-                    <button onclick="changeScore('right', 1)" class="bg-blue-500 text-white text-4xl font-bold py-8 rounded-2xl active:bg-blue-600 shadow-md touch-manipulation">
-                        +1
-                    </button>
-                    <button onclick="changeScore('right', -1)" class="bg-gray-300 text-gray-700 text-xl font-bold py-3 rounded-xl active:bg-gray-400 shadow touch-manipulation">
-                        -1
-                    </button>
+
+                <!-- 2. 加减分模式 (默认隐藏) -->
+                <div id="plusminusModeArea" class="hidden grid grid-cols-2 gap-6 py-4">
+                    <!-- 左侧加减 -->
+                    <div class="flex flex-col gap-3">
+                        <button onclick="changeScore('left', 1)" class="bg-gradient-to-b from-blue-500 to-indigo-600 text-white text-4xl font-extrabold py-8 rounded-2xl active:scale-95 transition-all shadow-lg border border-blue-400/20">
+                            +1
+                        </button>
+                        <button onclick="changeScore('left', -1)" class="bg-slate-700 text-slate-200 text-xl font-bold py-3 rounded-xl active:scale-95 transition-all shadow border border-slate-600">
+                            -1
+                        </button>
+                    </div>
+                    <!-- 右侧加减 -->
+                    <div class="flex flex-col gap-3">
+                        <button onclick="changeScore('right', 1)" class="bg-gradient-to-b from-blue-500 to-indigo-600 text-white text-4xl font-extrabold py-8 rounded-2xl active:scale-95 transition-all shadow-lg border border-blue-400/20">
+                            +1
+                        </button>
+                        <button onclick="changeScore('right', -1)" class="bg-slate-700 text-slate-200 text-xl font-bold py-3 rounded-xl active:scale-95 transition-all shadow border border-slate-600">
+                            -1
+                        </button>
+                    </div>
                 </div>
             </div>
 
         </main>
 
         <!-- 历史记录区域 -->
-        <section class="border-t border-gray-200 p-4 bg-gray-50">
-            <div class="flex justify-between items-center mb-3">
-                <h3 class="text-base font-bold text-gray-700">📋 历史比赛记录</h3>
-                <button onclick="clearAllHistory()" class="text-xs text-red-500 border border-red-200 px-2 py-1 rounded bg-white">清空历史</button>
+        <section class="border-t border-slate-700 p-4 bg-slate-900/60 rounded-t-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-sm font-bold text-slate-300 flex items-center gap-1.5">
+                    📋 历史对局记录 (已自动保存)
+                </h3>
+                <button onclick="clearAllHistory()" class="text-[11px] text-red-400 hover:text-red-300 border border-red-500/20 px-2.5 py-1 rounded bg-red-500/5 font-semibold transition-all">
+                    清空记录
+                </button>
             </div>
             
-            <!-- 记录容器，用于生成图片 -->
-            <div id="historyContainer" class="space-y-3 max-h-80 overflow-y-auto pr-1">
-                <!-- 记录卡片将由 JS 动态生成 -->
-                <div id="noHistoryTip" class="text-center text-sm text-gray-400 py-4">暂无历史记录</div>
+            <!-- 历史列表容器 -->
+            <div id="historyContainer" class="space-y-4 max-h-[320px] overflow-y-auto pr-1">
+                <div id="noHistoryTip" class="text-center text-xs text-slate-500 py-6">暂无完赛历史</div>
             </div>
         </section>
 
     </div>
 
-    <!-- 核心逻辑 JS -->
+    <!-- 核心业务逻辑 -->
     <script>
-        // 比赛状态数据
+        // 比赛数据结构
         let match = {
             player1: "选手 A",
             player2: "选手 B",
             p1GamesWon: 0,
             p2GamesWon: 0,
-            currentGameIndex: 1, // 当前第几局 (1, 2, 3)
+            currentGameIndex: 1, // 当前正在打第几局 (1, 2, 3)
             currentGameScores: { left: 0, right: 0 },
-            gameLogs: [], // 记录每局的结果和时间
-            matchFinished: false
+            gameLogs: [], // 存储第 1, 2, 3 局的开始时间、结束时间及比分
+            matchFinished: false,
+            matchStartTime: ""
         };
 
-        // 历史比赛数据 (从本地存储读取)
-        let matchHistory = JSON.parse(localStorage.getItem('pingpong_history')) || [];
+        // 历史比赛总数据
+        let matchHistory = JSON.parse(localStorage.getItem('pingpong_history_v2')) || [];
 
-        // 初始化加载
+        // 初始化
         window.onload = function() {
+            renderDirectButtons();
             syncNames();
             updateUI();
             renderHistory();
+            recordMatchStartTime();
 
-            // 监听名字输入框变化
+            // 监听输入名字实时更新
             document.getElementById('player1Input').addEventListener('input', (e) => {
-                match.player1 = e.target.value || "选手 A";
+                match.player1 = e.target.value.trim() || "选手 A";
                 updateUI();
             });
             document.getElementById('player2Input').addEventListener('input', (e) => {
-                match.player2 = e.target.value || "选手 B";
+                match.player2 = e.target.value.trim() || "选手 B";
                 updateUI();
             });
         };
 
-        // 同步输入框的名字
-        function syncNames() {
-            match.player1 = document.getElementById('player1Input').value || "选手 A";
-            match.player2 = document.getElementById('player2Input').value || "选手 B";
+        // 记录本场比赛大开局时间
+        function recordMatchStartTime() {
+            if (!match.matchStartTime) {
+                match.matchStartTime = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            }
         }
 
-        // 获取当前局中，“左侧”和“右侧”分别对应哪位选手
-        // 第一局：左 A vs 右 B
-        // 第二局：左 B vs 右 A （交换场地）
-        // 第三局：左 A vs 右 B （再次交换场地）
+        // 同步输入名字
+        function syncNames() {
+            match.player1 = document.getElementById('player1Input').value.trim() || "选手 A";
+            match.player2 = document.getElementById('player2Input').value.trim() || "选手 B";
+        }
+
+        // 根据局数，自动判断两边选手席位
+        // 第一局：左 1 对应 A，右 2 对应 B
+        // 第二局：左 B，右 A (交换场地)
+        // 第三局：左 A，右 B (再次交换)
         function getSides() {
             if (match.currentGameIndex === 2) {
                 return {
                     leftPlayer: match.player2,
                     rightPlayer: match.player1,
                     leftKey: 'p2',
-                    rightKey: 'p1'
+                    rightKey: 'p1',
+                    leftPos: '2号位',
+                    rightPos: '1号位'
                 };
             } else {
                 return {
                     leftPlayer: match.player1,
                     rightPlayer: match.player2,
                     leftKey: 'p1',
-                    rightKey: 'p2'
+                    rightKey: 'p2',
+                    leftPos: '1号位',
+                    rightPos: '2号位'
                 };
             }
         }
 
-        // 改变分数 (加分或减分)
+        // 切换计分控制面板
+        function switchMode(mode) {
+            const btnDirect = document.getElementById('tabDirect');
+            const btnPM = document.getElementById('tabPlusMinus');
+            const areaDirect = document.getElementById('directModeArea');
+            const areaPM = document.getElementById('plusminusModeArea');
+
+            if (mode === 'direct') {
+                btnDirect.className = "w-1/2 py-1 text-xs font-bold rounded-md transition-all bg-blue-500 text-white shadow-md";
+                btnPM.className = "w-1/2 py-1 text-xs font-bold rounded-md transition-all text-slate-400";
+                areaDirect.classList.remove('hidden');
+                areaPM.classList.add('hidden');
+            } else {
+                btnPM.className = "w-1/2 py-1 text-xs font-bold rounded-md transition-all bg-blue-500 text-white shadow-md";
+                btnDirect.className = "w-1/2 py-1 text-xs font-bold rounded-md transition-all text-slate-400";
+                areaPM.classList.remove('hidden');
+                areaDirect.classList.add('hidden');
+            }
+        }
+
+        // 生成0-15直达数字按钮
+        function renderDirectButtons() {
+            const leftContainer = document.getElementById('leftButtons');
+            const rightContainer = document.getElementById('rightButtons');
+            leftContainer.innerHTML = '';
+            rightContainer.innerHTML = '';
+
+            for (let i = 0; i <= 15; i++) {
+                // 左侧按钮
+                const btnL = document.createElement('button');
+                btnL.innerText = i;
+                btnL.onclick = () => setScoreDirect('left', i);
+                btnL.className = "bg-slate-700/60 hover:bg-slate-600 border border-slate-600/50 text-slate-200 rounded py-2 text-xs font-bold active:bg-blue-600 active:text-white transition-all text-center";
+                leftContainer.appendChild(btnL);
+
+                // 右侧按钮
+                const btnR = document.createElement('button');
+                btnR.innerText = i;
+                btnR.onclick = () => setScoreDirect('right', i);
+                btnR.className = "bg-slate-700/60 hover:bg-slate-600 border border-slate-600/50 text-slate-200 rounded py-2 text-xs font-bold active:bg-blue-600 active:text-white transition-all text-center";
+                rightContainer.appendChild(btnR);
+            }
+        }
+
+        // 按钮直接设分
+        function setScoreDirect(side, value) {
+            if (match.matchFinished) return;
+            match.currentGameScores[side] = value;
+            updateUI();
+            checkWinCondition();
+        }
+
+        // 加减分逻辑
         function changeScore(side, amount) {
             if (match.matchFinished) return;
             let current = match.currentGameScores[side];
@@ -177,56 +319,58 @@
             if (target >= 0 && target <= 15) {
                 match.currentGameScores[side] = target;
                 updateUI();
-                checkGameWinCondition();
+                checkWinCondition();
             }
         }
 
-        // 核心：检查是否有人赢得本局
-        function checkGameWinCondition() {
+        // 核心：胜局与胜赛判断
+        function checkWinCondition() {
             const leftScore = match.currentGameScores.left;
             const rightScore = match.currentGameScores.right;
             const sides = getSides();
 
-            // 胜局判断逻辑
-            function isWinner(score, opponentScore) {
-                // 1. 达到15分直接赢
+            // 单局输赢算法
+            function checkGame(score, opponentScore) {
+                // 1. 到达15分直接胜
                 if (score === 15) return true;
-                // 2. 达到11分及以上，且领先对手2分及以上
+                // 2. 达到11分及以上，且超过对手2分及以上
                 if (score >= 11 && (score - opponentScore) >= 2) return true;
                 return false;
             }
 
-            let leftWins = isWinner(leftScore, rightScore);
-            let rightWins = isWinner(rightScore, leftScore);
+            const leftWon = checkGame(leftScore, rightScore);
+            const rightWon = checkGame(rightScore, leftScore);
 
-            if (leftWins || rightWins) {
-                let winnerKey = leftWins ? sides.leftKey : sides.rightKey;
-                let winnerName = leftWins ? sides.leftPlayer : sides.rightPlayer;
-                
-                // 记录本局结果
-                const timestamp = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            if (leftWon || rightWon) {
+                const winnerKey = leftWon ? sides.leftKey : sides.rightKey;
+                const winnerName = leftWon ? sides.leftPlayer : sides.rightPlayer;
+                const gameTime = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+                // 记录这一局的信息（包括谁打的，具体什么时候打的，比分是多少）
                 match.gameLogs.push({
                     gameIndex: match.currentGameIndex,
-                    time: timestamp,
-                    scoreDisplay: `${sides.leftPlayer} ${leftScore} : ${rightScore} ${sides.rightPlayer}`,
+                    time: gameTime,
+                    playerLeft: sides.leftPlayer,
+                    playerRight: sides.rightPlayer,
+                    scoreLeft: leftScore,
+                    scoreRight: rightScore,
                     winner: winnerName
                 });
 
-                // 更新胜局数
+                // 累加胜局
                 if (winnerKey === 'p1') {
                     match.p1GamesWon++;
                 } else {
                     match.p2GamesWon++;
                 }
 
-                // 判断整场比赛是否结束（三局两胜）
+                // 检查是否有人拿到了 2 局胜利（三局两胜）
                 if (match.p1GamesWon === 2 || match.p2GamesWon === 2) {
                     match.matchFinished = true;
                     saveMatchToHistory();
-                    alert(`🎉 比赛结束！恭喜 ${winnerName} 获得最终胜利！`);
+                    alert(`🏆 比赛结束！\n恭喜 ${winnerName} 赢得整场比赛的最终胜利！`);
                 } else {
-                    // 进入下一局并交换场地
-                    alert(`第 ${match.currentGameIndex} 局结束，${winnerName} 获胜！请交换场地，准备开始下一局。`);
+                    alert(`第 ${match.currentGameIndex} 局结束，【${winnerName}】胜出！\n下一局将自动交换场地，请交换站位。`);
                     match.currentGameIndex++;
                     match.currentGameScores = { left: 0, right: 0 };
                 }
@@ -234,21 +378,21 @@
             }
         }
 
-        // 更新界面渲染
+        // 渲染更新页面数据
         function updateUI() {
             const sides = getSides();
-            
-            // 更新当前局数提示
+
+            // 更新状态标牌
             const label = document.getElementById('gameNumberLabel');
             if (match.matchFinished) {
-                label.innerText = "比赛已结束";
-                label.className = "text-lg font-bold text-red-600 bg-red-50 py-1 rounded";
+                label.innerText = "⭐ 比赛已完结";
+                label.className = "text-sm font-bold text-emerald-400 bg-emerald-900/30 py-1.5 px-5 rounded-full inline-block border border-emerald-500/40";
             } else {
                 label.innerText = `第 ${match.currentGameIndex} 局 (进行中)`;
-                label.className = "text-lg font-bold text-blue-600 bg-blue-50 py-1 rounded";
+                label.className = "text-sm font-bold text-yellow-400 bg-slate-700/50 py-1.5 px-4 rounded-full inline-block border border-slate-600";
             }
 
-            // 更新左侧和右侧的姓名、当前比分、胜局数
+            // 更新左、右方数据
             document.getElementById('leftPlayerName').innerText = sides.leftPlayer;
             document.getElementById('leftScore').innerText = match.currentGameScores.left;
             document.getElementById('leftGamesWon').innerText = `胜局: ${sides.leftKey === 'p1' ? match.p1GamesWon : match.p2GamesWon}`;
@@ -257,89 +401,104 @@
             document.getElementById('rightScore').innerText = match.currentGameScores.right;
             document.getElementById('rightGamesWon').innerText = `胜局: ${sides.rightKey === 'p1' ? match.p1GamesWon : match.p2GamesWon}`;
 
-            // 标注场地（让裁判看明白是谁在左边谁在右边）
-            document.getElementById('leftSideLabel').innerText = `左侧 [当前: ${sides.leftPlayer === match.player1 ? '1号位' : '2号位'}]`;
-            document.getElementById('rightSideLabel').innerText = `右侧 [当前: ${sides.rightPlayer === match.player1 ? '1号位' : '2号位'}]`;
+            // 位置标识
+            document.getElementById('leftSideLabel').innerText = `左侧 [${sides.leftPos}]`;
+            document.getElementById('rightSideLabel').innerText = `右侧 [${sides.rightPos}]`;
         }
 
-        // 重置当前整场比赛
+        // 重置当前单场对局
         function resetCurrentMatch() {
-            if (confirm("确定要重置当前比赛吗？当前比分和尚未完成的记录将丢失。")) {
+            if (confirm("确定要重新开局吗？当前整场未提交的临时比分与进程数据都会消失。")) {
+                const p1 = document.getElementById('player1Input').value.trim() || "选手 A";
+                const p2 = document.getElementById('player2Input').value.trim() || "选手 B";
+                
                 match = {
-                    player1: document.getElementById('player1Input').value || "选手 A",
-                    player2: document.getElementById('player2Input').value || "选手 B",
+                    player1: p1,
+                    player2: p2,
                     p1GamesWon: 0,
                     p2GamesWon: 0,
                     currentGameIndex: 1,
                     currentGameScores: { left: 0, right: 0 },
                     gameLogs: [],
-                    matchFinished: false
+                    matchFinished: false,
+                    matchStartTime: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
                 };
                 updateUI();
             }
         }
 
-        // 保存比赛记录至本地
+        // 将比赛归档到历史记录并存盘
         function saveMatchToHistory() {
             const dateStr = new Date().toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' });
-            const timeStr = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
             
-            const winner = match.p1GamesWon === 2 ? match.player1 : match.player2;
-
             const record = {
                 id: 'match_' + Date.now(),
-                date: `${dateStr} ${timeStr}`,
+                date: dateStr,
+                startTime: match.matchStartTime,
                 player1: match.player1,
                 player2: match.player2,
-                winner: winner,
-                gamesWon: `${match.p1GamesWon} : ${match.p2GamesWon}`,
+                p1GamesWon: match.p1GamesWon,
+                p2GamesWon: match.p2GamesWon,
+                winner: match.p1GamesWon === 2 ? match.player1 : match.player2,
                 logs: [...match.gameLogs]
             };
 
-            matchHistory.unshift(record); // 最新记录放最前面
-            localStorage.setItem('pingpong_history', JSON.stringify(matchHistory));
+            matchHistory.unshift(record);
+            localStorage.setItem('pingpong_history_v2', JSON.stringify(matchHistory));
             renderHistory();
         }
 
-        // 渲染历史记录列表
+        // 渲染历史数据列表
         function renderHistory() {
             const container = document.getElementById('historyContainer');
             if (matchHistory.length === 0) {
-                container.innerHTML = `<div id="noHistoryTip" class="text-center text-sm text-gray-400 py-4">暂无历史记录</div>`;
+                container.innerHTML = `<div id="noHistoryTip" class="text-center text-xs text-slate-500 py-6">暂无完赛历史</div>`;
                 return;
             }
 
             container.innerHTML = '';
-            matchHistory.forEach((item, index) => {
+            matchHistory.forEach((item) => {
                 let logsHtml = '';
                 item.logs.forEach(log => {
                     logsHtml += `
-                        <div class="flex justify-between text-xs text-gray-500 border-b border-dashed border-gray-100 py-1">
-                            <span>第 ${log.gameIndex} 局 [时间 ${log.time}]</span>
-                            <span class="font-medium">${log.scoreDisplay}</span>
+                        <div class="flex justify-between items-center text-[11px] text-slate-400 bg-slate-900/40 px-2 py-1.5 rounded border border-slate-700/30">
+                            <span>第 ${log.gameIndex} 局 [${log.time}]</span>
+                            <span class="font-mono text-slate-300 font-bold">${log.playerLeft} <span class="text-blue-400">${log.scoreLeft}:${log.scoreRight}</span> ${log.playerRight}</span>
                         </div>
                     `;
                 });
 
                 container.innerHTML += `
-                    <div id="card-${item.id}" class="bg-white p-3 rounded-lg border border-gray-200 shadow-sm relative">
-                        <div class="flex justify-between items-center mb-1 pb-1 border-b border-gray-100">
-                            <span class="text-xs font-bold text-blue-600">${item.date}</span>
-                            <span class="text-xs text-emerald-600 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded">赢家: ${item.winner}</span>
+                    <div id="card-${item.id}" class="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-md relative no-zoom">
+                        <!-- 卡片头部 -->
+                        <div class="flex justify-between items-center border-b border-slate-700/60 pb-2 mb-2">
+                            <span class="text-xs font-bold text-indigo-400 flex items-center gap-1">
+                                📅 ${item.date} ${item.startTime} 开始
+                            </span>
+                            <span class="text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full font-bold">
+                                胜者: ${item.winner}
+                            </span>
                         </div>
-                        <div class="text-sm font-bold text-gray-800 my-1 flex justify-between">
-                            <span>${item.player1} VS ${item.player2}</span>
-                            <span class="text-blue-600">比分: ${item.gamesWon}</span>
+                        
+                        <!-- 选手比分摘要 -->
+                        <div class="flex justify-between items-center py-1">
+                            <span class="text-sm font-extrabold text-white">${item.player1} VS ${item.player2}</span>
+                            <span class="text-sm font-black text-yellow-400 bg-slate-900/50 px-2.5 py-0.5 rounded border border-slate-700">
+                                大比分 ${item.p1GamesWon} : ${item.p2GamesWon}
+                            </span>
                         </div>
-                        <div class="mt-2 space-y-1">
+
+                        <!-- 详细小局清单 -->
+                        <div class="mt-2.5 space-y-1.5">
                             ${logsHtml}
                         </div>
-                        <!-- 卡片操作按键 -->
-                        <div class="mt-3 flex justify-end gap-2 text-xs">
-                            <button onclick="downloadCardImage('${item.id}')" class="bg-blue-50 text-blue-600 border border-blue-200 px-2.5 py-1 rounded-md font-medium active:bg-blue-100">
-                                💾 保存图片
+
+                        <!-- 卡片下载和删除功能栏 -->
+                        <div class="mt-3.5 pt-2 border-t border-slate-700/60 flex justify-end gap-2.5">
+                            <button onclick="downloadCardImage('${item.id}')" class="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white border border-blue-500/30 px-3 py-1 rounded-md text-[11px] font-bold transition-all flex items-center gap-1 active:scale-95">
+                                📥 保存为图片
                             </button>
-                            <button onclick="deleteRecord('${item.id}')" class="bg-red-50 text-red-500 border border-red-100 px-2.5 py-1 rounded-md font-medium active:bg-red-100">
+                            <button onclick="deleteRecord('${item.id}')" class="bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white border border-red-500/20 px-3 py-1 rounded-md text-[11px] font-bold transition-all active:scale-95">
                                 删除
                             </button>
                         </div>
@@ -348,56 +507,56 @@
             });
         }
 
-        // 删除单条记录
+        // 删除单条比赛记录
         function deleteRecord(id) {
-            if (confirm("确定要删除这条记录吗？")) {
+            if (confirm("确定要永久删除本条完赛记录吗？")) {
                 matchHistory = matchHistory.filter(item => item.id !== id);
-                localStorage.setItem('pingpong_history', JSON.stringify(matchHistory));
+                localStorage.setItem('pingpong_history_v2', JSON.stringify(matchHistory));
                 renderHistory();
             }
         }
 
         // 清空所有历史
         function clearAllHistory() {
-            if (confirm("确定清空所有历史比赛记录吗？数据清空后将无法找回。")) {
+            if (confirm("确定清空全部完赛记录吗？此操作会导致本地缓存的数据永久清空且不可恢复。")) {
                 matchHistory = [];
-                localStorage.removeItem('pingpong_history');
+                localStorage.removeItem('pingpong_history_v2');
                 renderHistory();
             }
         }
 
-        // 保存记录卡片为手机图片
+        // 截图导出功能
         function downloadCardImage(cardId) {
             const card = document.getElementById(`card-${cardId}`);
             
-            // 临时隐藏卡片底部的操作按钮以保持图片整洁
-            const buttons = card.querySelector('div:last-child');
-            buttons.style.display = 'none';
+            // 截图前隐去控制栏（保存和删除按钮）
+            const controlBar = card.querySelector('div:last-child');
+            controlBar.style.display = 'none';
 
-            // 设置 html2canvas 渲染参数
+            // 设置 html2canvas 参数
             const options = {
-                backgroundColor: '#f3f4f6', // 设置与背景一致的灰色底
-                scale: 2, // 提高清晰度
-                useCORS: true
+                backgroundColor: '#1e293b', // 采用 Slate-800 作为图片的底色
+                scale: 3, // 高清图
+                useCORS: true,
+                logging: false
             };
 
             html2canvas(card, options).then(canvas => {
-                // 恢复按钮显示
-                buttons.style.display = 'flex';
+                // 截图后复原控制栏
+                controlBar.style.display = 'flex';
 
-                // 将 canvas 转换为 base64 图片格式
                 const imgData = canvas.toDataURL('image/png');
 
-                // 创建下载链接
+                // 调起本地下载
                 const link = document.createElement('a');
-                link.download = `乒乓球比赛记录-${cardId.substring(6)}.png`;
+                link.download = `乒乓球赛果_${cardId.split('_')[1]}.png`;
                 link.href = imgData;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
             }).catch(err => {
-                buttons.style.display = 'flex';
-                alert('保存图片失败，请重试');
+                controlBar.style.display = 'flex';
+                alert('保存图片失败，请检查浏览器权限。');
                 console.error(err);
             });
         }
